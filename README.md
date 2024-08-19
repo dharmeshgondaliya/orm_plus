@@ -125,9 +125,10 @@ Replace the placeholder values with your actual database host, database name, us
 #### Initializing the ORM
 
 Once you have defined your schema and established a database connection, you can initialize the ORM and synchronize the database schema:
+```
 ORM orm = ORM(client: client, schemas: [userSchema], logging: true);
 await orm.sync(syncTable: true);
-
+```
 This code initializes the ORM with the database client and schema, and synchronizes the schema with the database. The syncTable parameter ensures that existing tables are updated or recreated as necessary.
 
 
@@ -196,9 +197,9 @@ userRouter.patch("/update", (req, res) async {
 
 This route updates the verify field for user records and returns the updated data.
 
+<br />
 
-
-Fetching Records
+#### Fetching Records
 To handle a GET request for retrieving all records:
 
 ```
