@@ -152,20 +152,6 @@ class _SelectQueryBuilder extends _QueryBuilder {
       whereCondition = getWhereCondition(where, "\"$table\".");
     }
 
-    String subQuery = "$table AS \"$table\"";
-    if (limitOffset.isNotEmpty && (include ?? []).isEmpty) {
-      if (whereCondition.isNotEmpty) {
-        subQuery += " WHERE $whereCondition";
-      }
-      subQuery += " $limitOffset";
-    } else if (limitOffset.isNotEmpty && whereCondition.isNotEmpty) {
-      subQuery = "(SELECT * FROM $table WHERE $whereCondition $limitOffset) AS \"$table\"";
-    } else if (limitOffset.isNotEmpty) {
-      subQuery = "(SELECT * FROM $table $limitOffset) AS \"$table\"";
-    } else if (whereCondition.isNotEmpty) {
-      joinString += " WHERE $whereCondition";
-    }
-
     if (havingCondition.isNotEmpty) {
       groupBy += " HAVING $havingCondition";
     }
@@ -175,10 +161,73 @@ class _SelectQueryBuilder extends _QueryBuilder {
       if ((include ?? []).isNotEmpty) {
         selectColumn = "\"$table\".$mainTablePrimarykey";
       }
-      return "SELECT Count($selectColumn) as count FROM $table AS \"$table\" $joinString $groupBy $orderBy";
+      return "SELECT Count($selectColumn) as count FROM $table AS \"$table\" $joinString $whereCondition $groupBy";
     }
 
-    return "SELECT $columns FROM $subQuery $joinString $groupBy $orderBy";
+    String query = "SELECT $columns FROM ";
+    String subQuery = "$table AS \"$table\"";
+    if (limitOffset.isNotEmpty && (include ?? []).isNotEmpty) {
+      if (whereCondition.isNotEmpty) {
+        subQuery = "(SELECT * FROM $table WHERE $whereCondition $limitOffset) AS \"$table\"";
+      } else {
+        subQuery = "(SELECT * FROM $table $limitOffset) AS \"$table\"";
+      }
+      query += subQuery;
+      if (joinString.isNotEmpty) {
+        query += " $joinString";
+      }
+      if (groupBy.isNotEmpty) {
+        query += " $groupBy";
+      }
+      if (orderBy.isNotEmpty) {
+        query += " $orderBy";
+      }
+    } else {
+      query += subQuery;
+      if (whereCondition.isNotEmpty) {
+        joinString += " WHERE $whereCondition";
+      }
+      query += " $joinString";
+      if (groupBy.isNotEmpty) {
+        query += " $groupBy";
+      }
+      if (orderBy.isNotEmpty) {
+        query += " $orderBy";
+      }
+      if (limitOffset.isNotEmpty) {
+        query += " $limitOffset";
+      }
+    }
+
+    return query;
+
+    // String subQuery = "$table AS \"$table\"";
+    // if (limitOffset.isNotEmpty && (include ?? []).isEmpty) {
+    //   if (whereCondition.isNotEmpty) {
+    //     subQuery += " WHERE $whereCondition";
+    //   }
+    //   subQuery += " $limitOffset";
+    // } else if (limitOffset.isNotEmpty && whereCondition.isNotEmpty) {
+    //   subQuery = "(SELECT * FROM $table WHERE $whereCondition $limitOffset) AS \"$table\"";
+    // } else if (limitOffset.isNotEmpty) {
+    //   subQuery = "(SELECT * FROM $table $limitOffset) AS \"$table\"";
+    // } else if (whereCondition.isNotEmpty) {
+    //   joinString += " WHERE $whereCondition";
+    // }
+
+    // if (havingCondition.isNotEmpty) {
+    //   groupBy += " HAVING $havingCondition";
+    // }
+
+    // if (isCountQuery) {
+    //   String selectColumn = "*";
+    //   if ((include ?? []).isNotEmpty) {
+    //     selectColumn = "\"$table\".$mainTablePrimarykey";
+    //   }
+    //   return "SELECT Count($selectColumn) as count FROM $table AS \"$table\" $joinString $groupBy $orderBy";
+    // }
+
+    // return "SELECT $columns FROM $subQuery $joinString $groupBy $orderBy";
   }
 
   void addIncludeTable(Map includeObj, String tableNames, Map<String, dynamic> responseStructureData, {bool isRecursive = false}) {
@@ -220,7 +269,8 @@ class _SelectQueryBuilder extends _QueryBuilder {
     }
 
     Map<String, dynamic> responseStructureDatas = {
-      'fields': {}..addEntries(fieldsList.map((e) => e is SQLFunction ? MapEntry(e.alias, "$tableNames->${includeObj['table']}.${e.alias}") : MapEntry(e, "$tableNames->${includeObj['table']}.$e"))),
+      'fields': {}..addEntries(
+          fieldsList.map((e) => e is SQLFunction ? MapEntry(e.alias, "$tableNames->${includeObj['table']}.${e.alias}") : MapEntry(e, "$tableNames->${includeObj['table']}.$e"))),
       'table': includeObj['table'],
       'primary_key': primaryKey,
       'mapping_key': "$tableNames->${includeObj['table']}.$primaryKey",
@@ -337,15 +387,18 @@ class _SelectQueryBuilder extends _QueryBuilder {
     bool primayKeyContains = !(responseMappingData[responseStructureData['table']] as Map).containsKey(data[responseStructureData['mapping_key']]);
 
     if (primayKeyContains) {
-      responseMappingData[responseStructureData['table']][data[responseStructureData['mapping_key']]] = Map<dynamic, dynamic>.from({'index': modifiedData[responseStructureData['table']]?.length ?? 0});
+      responseMappingData[responseStructureData['table']][data[responseStructureData['mapping_key']]] =
+          Map<dynamic, dynamic>.from({'index': modifiedData[responseStructureData['table']]?.length ?? 0});
       modifiedData[responseStructureData['table']]?.add(Map<String, dynamic>.from({}));
-      Map<String, dynamic> modifiedMapData = modifiedData[responseStructureData['table']][responseMappingData[responseStructureData['table']][data[responseStructureData['mapping_key']]]['index']];
+      Map<String, dynamic> modifiedMapData =
+          modifiedData[responseStructureData['table']][responseMappingData[responseStructureData['table']][data[responseStructureData['mapping_key']]]['index']];
       (responseStructureData['fields'] as Map).forEach((key, value) {
         modifiedMapData[key] = data[value];
       });
     }
     for (Map<String, dynamic> includeStructure in responseStructureData['include'] ?? []) {
-      Map<String, dynamic> modifiedMapData = modifiedData[responseStructureData['table']][responseMappingData[responseStructureData['table']][data[responseStructureData['mapping_key']]]['index']];
+      Map<String, dynamic> modifiedMapData =
+          modifiedData[responseStructureData['table']][responseMappingData[responseStructureData['table']][data[responseStructureData['mapping_key']]]['index']];
       parseIncludeData(data, modifiedMapData, includeStructure, responseMappingData[responseStructureData['table']][data[responseStructureData['mapping_key']]]);
     }
   }

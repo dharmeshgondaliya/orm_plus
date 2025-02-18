@@ -63,6 +63,9 @@ class ORM {
           if (value['autoIncrement'] == true) {
             column += " AUTOINCREMENT";
           }
+          if (value['auto_increment'] == true) {
+            column += " AUTO_INCREMENT";
+          }
           if (value['allowNull'] == false) {
             column += " NOT NULL";
           }
@@ -156,9 +159,11 @@ class ORM {
     }
   }
 
-  Future<List<Map<String, Object?>>> findAll({required String table, List? fields, Map? where, int? limit, int? offset, List<Map>? include, List<String>? group, Map? having, Map<String, bool>? order}) async {
+  Future<List<Map<String, Object?>>> findAll(
+      {required String table, List? fields, Map? where, int? limit, int? offset, List<Map>? include, List<String>? group, Map? having, Map<String, bool>? order}) async {
     _SelectQueryBuilder queryBuilder = _SelectQueryBuilder(schemas: _schemas);
-    String query = queryBuilder.buildSelectQuery(table: table, fields: fields, where: where, limit: limit, offset: offset, group: group, having: having, order: order, include: include);
+    String query =
+        queryBuilder.buildSelectQuery(table: table, fields: fields, where: where, limit: limit, offset: offset, group: group, having: having, order: order, include: include);
     if (logging) print("Executing: $query");
     List<Map<String, dynamic>> data = await client.select(query);
     if (data.isEmpty) return [];
@@ -181,10 +186,12 @@ class ORM {
     return data.firstOrNull?['count'];
   }
 
-  Future<Map<String, Object?>> findAncCountAll({required String table, List? fields, Map? where, int? limit, int? offset, List<Map>? include, List<String>? group, Map? having, Map<String, bool>? order}) async {
+  Future<Map<String, Object?>> findAndCountAll(
+      {required String table, List? fields, Map? where, int? limit, int? offset, List<Map>? include, List<String>? group, Map? having, Map<String, bool>? order}) async {
     _SelectQueryBuilder queryBuilder = _SelectQueryBuilder(schemas: _schemas);
     _SelectQueryBuilder countQueryBuilder = _SelectQueryBuilder(schemas: _schemas);
-    String findQuery = queryBuilder.buildSelectQuery(table: table, fields: fields, where: where, limit: limit, offset: offset, group: group, having: having, order: order, include: include);
+    String findQuery =
+        queryBuilder.buildSelectQuery(table: table, fields: fields, where: where, limit: limit, offset: offset, group: group, having: having, order: order, include: include);
     String countQuery = countQueryBuilder.buildSelectQuery(table: table, fields: fields, where: where, group: group, having: having, include: include, isCountQuery: true);
     if (logging) print("Executing: $findQuery");
     if (logging) print("Executing: $countQuery");

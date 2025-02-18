@@ -40,7 +40,7 @@ void main() async {
     });
 
     userRouter.get("/all", (req, res) async {
-      var data = await orm.findAncCountAll(table: "users");
+      var data = await orm.findAndCountAll(table: "users");
       return res.json({'data': data});
     });
 
