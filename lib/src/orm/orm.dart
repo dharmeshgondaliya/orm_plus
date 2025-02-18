@@ -186,7 +186,7 @@ class ORM {
     return data.firstOrNull?['count'];
   }
 
-  Future<Map<String, Object?>> findAncCountAll(
+  Future<Map<String, Object?>> findAndCountAll(
       {required String table, List? fields, Map? where, int? limit, int? offset, List<Map>? include, List<String>? group, Map? having, Map<String, bool>? order}) async {
     _SelectQueryBuilder queryBuilder = _SelectQueryBuilder(schemas: _schemas);
     _SelectQueryBuilder countQueryBuilder = _SelectQueryBuilder(schemas: _schemas);

@@ -1,6 +1,6 @@
 name: orm_plus
-description: orm_plus is a Dart ORM library that simplifies server-side development with support for MySQL and PostgreSQL. It streamlines tasks such as server setup, schema definition, and CRUD operations. With features like advanced querying, relationship management, and optional logging, orm_plus makes building scalable and efficient applications straightforward.
-version: 1.0.0
+description: orm_plus is a Dart ORM for MySQL and PostgreSQL, simplifying server-side development with schema definition, CRUD operations, advanced queries, relationships, and optional logging. It streamlines server setup for scalable applications.
+version: 1.0.1
 repository: https://github.com/dharmeshgondaliya/orm_plus.git
 
 platforms:
@@ -12,11 +12,11 @@ environment:
   sdk: ^3.4.4
 
 dependencies:
-  archive: ^3.6.1
-  mime: ^1.0.5
+  archive: ^4.0.2
+  mime: ^2.0.0
   mysql_client: ^0.0.27
   postgres: ^3.2.1
 
 dev_dependencies:
-  lints: ^3.0.0
+  lints: ^5.1.1
   test: ^1.24.0
